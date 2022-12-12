@@ -1,19 +1,16 @@
-SRC = main.c
+SRC = main.cpp
 OBJ = ${SRC:.c=.o}
 OUT = build
 
-CC 			= /usr/bin/g++
-CFLAGS 	= -ansi -Wall -std=c99 
-CFDEBUG = -ansi -Wall -g -std=c99  -o ./main.o
+CC=  /usr/bin/g++
+CFLAGS 	= -ansi -Wall -std=c++17
+CFDEBUG = -ansi -Wall -g -std=c++17  -o ./main.o
 
 %.o: %.c
 	 $(CC) -c $(CFLAGS)
 
-clean:
-		$(RM) $(OBJ) a.out $(OUT)/*
-
-debug: $(SRC)
-		$(CC) $(SRC) $(CFDEBUG) -o $(OUT)/a.out
+build: 
+	$(CC) $(SRC) $(CFLAGS) -o main.o
 
 run: $(SRC)
-		$(CC) $(SRC) $(CFLAGS) -o $(OUT)/a.out && ./$(OUT)/main.o
+		$(CC) $(SRC) $(CFLAGS) -o main.o && main.o
