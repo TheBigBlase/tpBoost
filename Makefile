@@ -4,8 +4,8 @@ OUT = build
 RM = rm 
 
 CC=  /usr/bin/g++
-CFLAGS 	= -ansi -Wall -std=c++17
-CFDEBUG = -ansi -Wall -g -std=c++17  -o ./main.o
+CFLAGS 	= -ansi -Wall -std=c++17 -O3
+CFDEBUG = -ansi -Wall -g -std=c++17 -O0
 
 %.o: %.c
 	 $(CC) -c $(CFLAGS)
@@ -13,8 +13,10 @@ CFDEBUG = -ansi -Wall -g -std=c++17  -o ./main.o
 build: 
 	$(CC) $(SRC) $(CFLAGS) -o main.o
 
-run: $(SRC)
-		$(CC) $(SRC) $(CFLAGS) -o main.o && ./main.o
+run: 
+	$(CC) $(SRC) $(CFLAGS) -o main.o && time ./main.o
 	
+debug: 
+	$(CC) $(SRC) $(CFDEBUG) -o main.o && gdb ./main.o
 clean: 
 	$(RM) main.o out.graphml
