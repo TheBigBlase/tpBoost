@@ -1,2 +1,7 @@
 *out*
 *.o
+*.sln
+*.vcxproj*
+dependencies/
+x64/
+.vs/
