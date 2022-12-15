@@ -1,3 +1,8 @@
 *out*
 *.o
 .vimspector.json
+*.sln
+*.vcxproj*
+dependencies/
+x64/
+.vs/

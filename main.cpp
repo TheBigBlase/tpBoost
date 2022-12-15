@@ -8,9 +8,11 @@
 #include <boost/graph/properties.hpp>
 #include <array>
 #include <string>
+#include <chrono>
 #include <random>
 #include <tuple>
-#define NUMBER_NODE 100000
+
+#define NUMBER_NODE 1000
 
 typedef boost::adjacency_matrix<
 					boost::undirectedS,
@@ -24,8 +26,26 @@ typedef std::pair<boost::graph_traits<MatrixGraph>::vertex_descriptor,
 
 typedef boost::property_map<MatrixGraph, boost::vertex_color_t> color_map_t;
 
+struct Chrono
+{
+	std::chrono::steady_clock::time_point begin;
+	std::string m_name;
+
+	Chrono(const std::string& name)
+	{
+		m_name = name;
+		begin = std::chrono::steady_clock::now();
+	}
+
+	~Chrono()
+	{
+		std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+		std::cout << m_name << " :" << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() / 1000.f << std::endl;
+	}
+};
+
 int firstNonWhiteVertex(boost::vector_property_map<boost::default_color_type, 
-		boost::typed_identity_property_map<unsigned long>> *colormap,
+		boost::typed_identity_property_map<size_t>> *colormap,
 		MatrixGraph * g){
 
 	MatrixGraph::vertex_iterator it, itEnd;
@@ -59,7 +79,49 @@ int hasCycle(MatrixGraph * g){
 	return count;
 }
 
+void createJsonDegreeFrequency(const std::map<int, int>& distrib, const double p)
+{
+	std::string nameFile = "./FrequencyDegree/" + std::to_string(p) + ".json";
+
+	std::ofstream FrequencyDegree;
+	FrequencyDegree.open(nameFile);
+
+	if (FrequencyDegree.is_open())
+	{
+		std::string* json = new std::string;
+
+		//FrenquencyDegree << "[";
+		*json = "[";
+
+
+		for (const auto& it : distrib)
+		{
+			//std::cout << it.first << "-" << it.second << std::endl;
+
+			//FrenquencyDegree << "{\"degree\":" << std::to_string(it.first) << ",\"freq\":" << std::to_string(it.second) << "},\n";
+			*json += ("{\"degree\":" + std::to_string(it.first) + ",\"freq\":" + std::to_string(it.second) + "},\n");
+		}
+
+		// On supprime la dernière virgule
+		json->pop_back();
+		json->pop_back();
+
+		*json += "]";
+
+		FrequencyDegree << *json;
+
+		FrequencyDegree.close();
+	}
+	else
+	{
+		std::cout << "Une erreur s'est produite !" << std::endl;
+	}
+
+}
+
 int main(int argc, char * argv[]){
+
+	Chrono C("TOTAL SCRIPT");
 
 	std::random_device rd;
 	std::mt19937 gen(rd());
@@ -69,26 +131,40 @@ int main(int argc, char * argv[]){
 
 	//std::array<std::array<int, n>, n> edgeMatrix {0};
 
-	for(float p {0} ; p < 1 ; p+=0.001){
+	for(double p = 0.0; p < 1 ; p+=0.001){
+		Chrono c("Total " + std::to_string(p));
+		std::map<int, int> distribDegree;
 		MatrixGraph * g = new MatrixGraph(n);
+
 		for(auto v {0} ; v < n ; v++){
 			for(auto w {0} ; w < n ; w++){
 				if(p > unif(gen) && w != v){
-					add_edge(w, v, *g);
+					boost::add_edge(w, v, *g);
 				}
 			}
 		}
 
+		Chrono x("BABIDJI " + std::to_string(p));
+
 		boost::dynamic_properties dp;
 
 		boost::graph_traits<MatrixGraph>::edge_iterator e, e_end;
-			for (boost::tie(e,e_end) = edges(*g); e != e_end; ++e)
-					boost::put(boost::edge_weight_t(), *g, *e, 1);
+		for (boost::tie(e, e_end) = boost::edges(*g); e != e_end; ++e)
+		{
+			boost::put(boost::edge_weight_t(), *g, *e, 1);
+		}
+					
 
 
 		boost::graph_traits<MatrixGraph>::vertex_iterator v, v_end;
-			for (boost::tie(v,v_end) = vertices(*g); v != v_end; ++v)
-					boost::put(boost::vertex_color_t(), *g, *v, *v);
+		for (boost::tie(v, v_end) = boost::vertices(*g); v != v_end; ++v)
+		{
+			int degree = boost::out_degree(*v, *g);
+			distribDegree[degree] += 1;
+			boost::put(boost::vertex_color_t(), *g, *v, *v);
+		}
+
+		createJsonDegreeFrequency(distribDegree, p);
 
 		dp.property("weight", get(boost::edge_weight_t(), *g));
 		dp.property("node_id", get(boost::vertex_color_t(), *g));
@@ -102,6 +178,7 @@ int main(int argc, char * argv[]){
 		
 		if(res == 1){
 			std::cout << "1 cluster, graph is connex. We will stop there." <<std::endl;
+			delete g;
 			break;
 		}
 		delete g;
