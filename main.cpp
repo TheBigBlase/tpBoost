@@ -31,12 +31,6 @@ typedef boost::adjacency_matrix<
 				boost::property< boost::vertex_color_t, std::string >,
         boost::property< boost::edge_weight_t, int >> MatrixGraph;
 
-
-struct Frequency
-{
-	int degree = 0;
-};
-
 int main(int argc, char * argv[]){
 	
 	// Random
@@ -45,9 +39,6 @@ int main(int argc, char * argv[]){
 	std::uniform_real_distribution<> unif(0, 1);//uniform distribution between 0 and 1
 
 	int const n = 10000;
-	
-	
-	const std::string name = "ABCDEF";
 
 
 	for (double p = 0.01; p <= 1; p += 0.09)
@@ -113,45 +104,4 @@ int main(int argc, char * argv[]){
 
 		FrenquencyDegree.close();
 	}
-
-	
-
-	/*
-	for(double p = 0.01; p < 1; p += 0.01)
-	{
-		Chrono c;
-		MatrixGraph g(n);
-		int numberOfLinks = 0;
-		for(int v = 0; v < n ; v++){
-			for(int w = 0; w < n ; w++){
-				if(p > unif(gen) && w!=v){
-				add_edge(w, v, g);
-				numberOfLinks++;
-				}
-			}
-		}
-
-		std::cout << p << " : " << numberOfLinks << std::endl;
-		
-		//boost::print_graph(g);
-		
-		boost::dynamic_properties dp;
-
-		boost::graph_traits<MatrixGraph>::edge_iterator e, e_end;
-		for (boost::tie(e,e_end) = edges(g); e != e_end; ++e)
-			put(boost::edge_weight_t(), g, *e, 1);
-
-
-		boost::graph_traits<MatrixGraph>::vertex_iterator v, v_end;
-		for (boost::tie(v,v_end) = vertices(g); v != v_end; ++v)
-			put(boost::vertex_color_t(), g, *v, std::to_string(*v));
-
-		dp.property("weight", get(boost::edge_weight_t(), g));
-		dp.property("node_id", get(boost::vertex_color_t(), g));
-
-		std::string nameOutput = std::to_string(p) + ".graphml";
-
-		std::ofstream f(nameOutput);
-		boost::write_graphml(f, g, dp, true);
-	}*/
 }
