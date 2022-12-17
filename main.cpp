@@ -6,13 +6,14 @@
 #include <boost/graph/graph_utility.hpp>
 #include <boost/graph/undirected_dfs.hpp>
 #include <boost/graph/properties.hpp>
+#include <boost/graph/copy.hpp>
 #include <array>
 #include <string>
 #include <chrono>
 #include <random>
 #include <tuple>
 
-#define NUMBER_NODE 200
+#define NUMBER_NODE 500
 
 typedef boost::adjacency_matrix<
 					boost::undirectedS,
@@ -120,12 +121,12 @@ void createJsonDegreeFrequency(const std::map<int, int>& distrib, const double p
 
 typedef boost::graph_traits<MatrixGraph>::vertex_iterator vertexIter;
 
-vertexIter getBestVertex(const MatrixGraph* G, vertexIter pickedVertex)
+vertexIter getBestVertex(const MatrixGraph* G)
 {
 	
 	vertexIter v, v_end;
 
-	int maxDegree = 0;
+	int maxDegree = -1;
 	vertexIter bestVertex;
 
 	for (boost::tie(v, v_end) = boost::vertices(*G); v != v_end; ++v)
@@ -142,7 +143,6 @@ vertexIter getBestVertex(const MatrixGraph* G, vertexIter pickedVertex)
 			}
 		//}
 
-		
 	}
 	return bestVertex;
 
@@ -150,7 +150,7 @@ vertexIter getBestVertex(const MatrixGraph* G, vertexIter pickedVertex)
 
 int main(int argc, char * argv[]){
 
-	Chrono C("TOTAL SCRIPT");
+	//Chrono C("TOTAL SCRIPT");
 
 	std::random_device rd;
 	std::mt19937 gen(rd());
@@ -158,39 +158,79 @@ int main(int argc, char * argv[]){
 
 	int const n = NUMBER_NODE;
 
-	
 	for(double p = 0.4; p < 0.55 ; p+=0.5){
 		Chrono c("Total " + std::to_string(p));
-		MatrixGraph * g = new MatrixGraph(n);
+
+		MatrixGraph* g = new MatrixGraph(n);
+		
+		MatrixGraph* g2 = new MatrixGraph(n);
 
 		for(auto v {0} ; v < n ; v++){
 			for(auto w {0} ; w < n ; w++){
 				if(p > unif(gen) && w != v){
 					boost::add_edge(w, v, *g);
+					boost::add_edge(w, v, *g2);
 				}
 			}
 		}
 
-		Chrono x("PROCESSING " + std::to_string(p));
+		//boost::print_graph(*g);
+		std::cout << "---------------------" << std::endl;
+
+		//boost::print_graph(*g2);
+		std::cout << "---------------------" << std::endl;
+		std::cout << "---------------------" << std::endl;
 
 		
+
+		Chrono x("PAS OPTI " + std::to_string(p));
+
+
 		boost::graph_traits<MatrixGraph>::vertex_iterator v, v_end;
 		for (boost::tie(v, v_end) = boost::vertices(*g); v != v_end; ++v)
 		{
 			//boost::print_graph(*g);
-			int degree = boost::out_degree(*v, *g);
+			//int degree = boost::out_degree(*v, *g);
 			//std::cout << *v << " - degree : " << degree << std::endl;
-			vertexIter bestVertex = getBestVertex(g, v);
+			vertexIter bestVertex = getBestVertex(g);
 			//std::cout << "Best vertex : " <<  *bestVertex << std::endl;
 			if (bestVertex != v)
 			{
 				boost::clear_vertex(*v, *g);
 				boost::add_edge(*v, *bestVertex, *g);
 			}
-			//std::cout << "---------------------" << std::endl;
+
 		}
 
-		boost::print_graph(*g);
+		//boost::print_graph(*g);
+
+		x.~Chrono();
+
+		std::cout << "---------------------" << std::endl;
+
+		// OPTI
+
+		Chrono x2("OPTI " + std::to_string(p));
+		
+		vertexIter bV = getBestVertex(g2);
+
+		boost::graph_traits<MatrixGraph>::vertex_iterator v2, v2_end;
+		for (boost::tie(v2, v2_end) = boost::vertices(*g2); v2 != v2_end; ++v2)
+		{
+			//boost::print_graph(*g);
+			//int degree = boost::out_degree(*v, *g);
+			//std::cout << *v << " - degree : " << degree << std::endl;
+			//std::cout << "Best vertex : " <<  *bestVertex << std::endl;
+			if (bV != v2)
+			{
+				boost::clear_vertex(*v2, *g2);
+				boost::add_edge(*v2, *bV, *g2);
+			}
+			//std::cout << "---------------------" << std::endl;
+		}
+		
+
+		//boost::print_graph(*g2);
 
 		delete g;
 	}
