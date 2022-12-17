@@ -12,13 +12,14 @@
 #include <random>
 #include <tuple>
 
-#define NUMBER_NODE 1000
+#define NUMBER_NODE 10
 
 typedef boost::adjacency_matrix<
 					boost::undirectedS,
 						boost::property< boost::vertex_color_t, int >,
 						boost::property< boost::edge_weight_t, int >
 				> MatrixGraph;
+
 
 typedef std::pair<boost::graph_traits<MatrixGraph>::vertex_descriptor, 
 									boost::graph_traits<MatrixGraph>::vertex_descriptor>
@@ -44,9 +45,7 @@ struct Chrono
 	}
 };
 
-int firstNonWhiteVertex(boost::vector_property_map<boost::default_color_type, 
-		boost::typed_identity_property_map<size_t>> *colormap,
-		MatrixGraph * g){
+int firstNonWhiteVertex(boost::vector_property_map<boost::default_color_type, boost::typed_identity_property_map<size_t>> *colormap,MatrixGraph * g){
 
 	MatrixGraph::vertex_iterator it, itEnd;
 
@@ -119,6 +118,36 @@ void createJsonDegreeFrequency(const std::map<int, int>& distrib, const double p
 
 }
 
+typedef boost::graph_traits<MatrixGraph>::vertex_iterator vertexIter;
+
+vertexIter getBestVertex(const MatrixGraph* G, vertexIter pickedVertex)
+{
+	
+	vertexIter v, v_end;
+
+	int maxDegree = 0;
+	vertexIter bestVertex;
+
+	for (boost::tie(v, v_end) = boost::vertices(*G); v != v_end; ++v)
+	{
+		if (v != pickedVertex)
+		{
+			int degree = boost::out_degree(*v, *G);
+
+			if (degree > maxDegree)
+			{
+				maxDegree = degree;
+				bestVertex = v;
+				//std::cout << "Degree : " << degree << " Max D : " << maxDegree << " New V " << *v << std::endl;
+			}
+		}
+
+		
+	}
+	return bestVertex;
+
+}
+
 int main(int argc, char * argv[]){
 
 	Chrono C("TOTAL SCRIPT");
@@ -129,11 +158,9 @@ int main(int argc, char * argv[]){
 
 	int const n = NUMBER_NODE;
 
-	//std::array<std::array<int, n>, n> edgeMatrix {0};
-
-	for(double p = 0.0; p < 1 ; p+=0.001){
+	
+	for(double p = 0.4; p < 0.55 ; p+=0.5){
 		Chrono c("Total " + std::to_string(p));
-		std::map<int, int> distribDegree;
 		MatrixGraph * g = new MatrixGraph(n);
 
 		for(auto v {0} ; v < n ; v++){
@@ -144,43 +171,25 @@ int main(int argc, char * argv[]){
 			}
 		}
 
-		Chrono x("BABIDJI " + std::to_string(p));
+		Chrono x("PROCESSING " + std::to_string(p));
 
-		boost::dynamic_properties dp;
-
-		boost::graph_traits<MatrixGraph>::edge_iterator e, e_end;
-		for (boost::tie(e, e_end) = boost::edges(*g); e != e_end; ++e)
-		{
-			boost::put(boost::edge_weight_t(), *g, *e, 1);
-		}
-					
-
-
+		
 		boost::graph_traits<MatrixGraph>::vertex_iterator v, v_end;
 		for (boost::tie(v, v_end) = boost::vertices(*g); v != v_end; ++v)
 		{
+			boost::print_graph(*g);
 			int degree = boost::out_degree(*v, *g);
-			distribDegree[degree] += 1;
-			boost::put(boost::vertex_color_t(), *g, *v, *v);
+			//std::cout << *v << " - degree : " << degree << std::endl;
+			vertexIter bestVertex = getBestVertex(g, v);
+			std::cout << "Best vertex : " <<  *bestVertex << std::endl;
+			//boost::clear_vertex(*v, *g);
+			boost::add_edge(*v, *bestVertex, *g);
+
+			std::cout << "---------------------" << std::endl;
 		}
 
-		createJsonDegreeFrequency(distribDegree, p);
+		boost::print_graph(*g);
 
-		dp.property("weight", get(boost::edge_weight_t(), *g));
-		dp.property("node_id", get(boost::vertex_color_t(), *g));
-
-		//std::ofstream f("outp=" + std::to_string(p) + ".graphml");
-		//boost::write_graphml(f, g, dp, true);
-
-
-		int res = hasCycle(g);
-		std::cout << " number of cluster for p = " << p << " : " << res << std::endl;
-		
-		if(res == 1){
-			std::cout << "1 cluster, graph is connex. We will stop there." <<std::endl;
-			delete g;
-			break;
-		}
 		delete g;
 	}
 }
