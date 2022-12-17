@@ -12,7 +12,7 @@
 #include <random>
 #include <tuple>
 
-#define NUMBER_NODE 10
+#define NUMBER_NODE 200
 
 typedef boost::adjacency_matrix<
 					boost::undirectedS,
@@ -130,8 +130,8 @@ vertexIter getBestVertex(const MatrixGraph* G, vertexIter pickedVertex)
 
 	for (boost::tie(v, v_end) = boost::vertices(*G); v != v_end; ++v)
 	{
-		if (v != pickedVertex)
-		{
+		//if (v != pickedVertex)
+		//{
 			int degree = boost::out_degree(*v, *G);
 
 			if (degree > maxDegree)
@@ -140,7 +140,7 @@ vertexIter getBestVertex(const MatrixGraph* G, vertexIter pickedVertex)
 				bestVertex = v;
 				//std::cout << "Degree : " << degree << " Max D : " << maxDegree << " New V " << *v << std::endl;
 			}
-		}
+		//}
 
 		
 	}
@@ -177,15 +177,17 @@ int main(int argc, char * argv[]){
 		boost::graph_traits<MatrixGraph>::vertex_iterator v, v_end;
 		for (boost::tie(v, v_end) = boost::vertices(*g); v != v_end; ++v)
 		{
-			boost::print_graph(*g);
+			//boost::print_graph(*g);
 			int degree = boost::out_degree(*v, *g);
 			//std::cout << *v << " - degree : " << degree << std::endl;
 			vertexIter bestVertex = getBestVertex(g, v);
-			std::cout << "Best vertex : " <<  *bestVertex << std::endl;
-			//boost::clear_vertex(*v, *g);
-			boost::add_edge(*v, *bestVertex, *g);
-
-			std::cout << "---------------------" << std::endl;
+			//std::cout << "Best vertex : " <<  *bestVertex << std::endl;
+			if (bestVertex != v)
+			{
+				boost::clear_vertex(*v, *g);
+				boost::add_edge(*v, *bestVertex, *g);
+			}
+			//std::cout << "---------------------" << std::endl;
 		}
 
 		boost::print_graph(*g);
