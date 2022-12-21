@@ -1,4 +1,4 @@
-SRC = main.cpp
+SRC = main.cpp utils.cpp
 OBJ = ${SRC:.c=.o}
 OUT = build
 RM = rm 
@@ -17,6 +17,6 @@ run:
 	$(CC) $(SRC) $(CFLAGS) -o main.o && time ./main.o
 	
 debug: 
-	$(CC) $(SRC) $(CFDEBUG) -o main.o && gdb ./main.o
+	$(CC) $(SRC) $(CFDEBUG) -o main.o
 clean: 
 	$(RM) main.o out.graphml
