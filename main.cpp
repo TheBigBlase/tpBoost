@@ -15,7 +15,7 @@
 #include "chrono.hpp"
 #include "utils.hpp"
 
-#define NUMBER_NODE 30
+#define NUMBER_NODE 100
 
 
 int main(int argc, char * argv[]){
@@ -55,6 +55,8 @@ int main(int argc, char * argv[]){
 		}
 
 	}
+
+	// PB : on clear à chaque fois dc pleins de noeuds célib
 
 	boost::print_graph(*g);
 

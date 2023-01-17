@@ -122,7 +122,7 @@ vertexIter getBestVertexRandom(const MatrixGraph* G)
 		int degree = boost::out_degree(*v, *G);
 		double randomDegree = (double)(degree)* unif(gen);
 
-		std::cout << "Real degree : " << degree << " vs Fake degree : " << randomDegree << std::endl;
+		//std::cout << "Real degree : " << degree << " vs Fake degree : " << randomDegree << std::endl;
 
 		if (randomDegree > maxDegree)
 		{
