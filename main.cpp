@@ -20,12 +20,6 @@ typedef boost::adjacency_matrix<
 						boost::property< boost::edge_weight_t, int >
 				> MatrixGraph;
 
-typedef std::pair<boost::graph_traits<MatrixGraph>::vertex_descriptor, 
-									boost::graph_traits<MatrixGraph>::vertex_descriptor>
-				PairVertexIterator;
-
-typedef boost::property_map<MatrixGraph, boost::vertex_color_t> color_map_t;
-
 struct Chrono
 {
 	std::chrono::steady_clock::time_point begin;
@@ -44,41 +38,6 @@ struct Chrono
 	}
 };
 
-int firstNonWhiteVertex(boost::vector_property_map<boost::default_color_type, 
-		boost::typed_identity_property_map<size_t>> *colormap,
-		MatrixGraph * g){
-
-	MatrixGraph::vertex_iterator it, itEnd;
-
-	for(boost::tie(it, itEnd) = boost::vertices(*g) ; it != itEnd ; it++){
-		if((*colormap)[*it] != 4){
-			return *it;
-		}
-	}
-	return -1;
-}
-
-int hasCycle(MatrixGraph * g){
-
-	auto indexmap = boost::get(boost::vertex_index, *g);
-	auto colormap = boost::make_vector_property_map<boost::default_color_type>(indexmap);
-
-	const char* color_names[] = {"white", "gray", "green", "red", "black"};
-
-	MatrixGraph::vertex_iterator it, itEnd;
-	int n = firstNonWhiteVertex(&colormap, g);
-	int count {0};
-
-	do {
-		boost::depth_first_visit(*g, boost::vertex(n, *g), 
-				boost::default_dfs_visitor(), colormap);
-		count++;
-	}
-	while((n = firstNonWhiteVertex(&colormap, g)) != -1);
-
-	return count;
-}
-
 void createJsonDegreeFrequency(const std::map<int, int>& distrib, const double p)
 {
 	std::string nameFile = "./FrequencyDegree/" + std::to_string(p) + ".json";
@@ -89,16 +48,11 @@ void createJsonDegreeFrequency(const std::map<int, int>& distrib, const double p
 	if (FrequencyDegree.is_open())
 	{
 		std::string* json = new std::string;
-
-		//FrenquencyDegree << "[";
 		*json = "[";
 
 
 		for (const auto& it : distrib)
 		{
-			//std::cout << it.first << "-" << it.second << std::endl;
-
-			//FrenquencyDegree << "{\"degree\":" << std::to_string(it.first) << ",\"freq\":" << std::to_string(it.second) << "},\n";
 			*json += ("{\"degree\":" + std::to_string(it.first) + ",\"freq\":" + std::to_string(it.second) + "},\n");
 		}
 
@@ -127,60 +81,36 @@ int main(int argc, char * argv[]){
 	std::mt19937 gen(rd());
 	std::uniform_real_distribution<> unif(0, 1);//uniform distribution between 0 and 1
 
-	int const n = NUMBER_NODE;
 
 	//std::array<std::array<int, n>, n> edgeMatrix {0};
 
-	for(double p = 0.0; p < 1 ; p+=0.001){
-		Chrono c("Total " + std::to_string(p));
-		std::map<int, int> distribDegree;
-		MatrixGraph * g = new MatrixGraph(n);
+	for(double p = 0.001; p < 1 ; p+=0.01){
+		// On crée nos objets
+		Chrono c("TOTAL " + std::to_string(p)); // Pour calculer temps du script
+		std::map<int, int> distribDegree; // Map degree - iteration
+		MatrixGraph * g = new MatrixGraph(NUMBER_NODE); // Le graphe
 
-		for(auto v {0} ; v < n ; v++){
-			for(auto w {0} ; w < n ; w++){
+		// On crée les arêtes selon la prob. p 
+
+		for(auto v {0} ; v < NUMBER_NODE; v++){
+			for(auto w {0} ; w < NUMBER_NODE; w++){
 				if(p > unif(gen) && w != v){
 					boost::add_edge(w, v, *g);
 				}
 			}
 		}
 
-		Chrono x("BABIDJI " + std::to_string(p));
-
-		boost::dynamic_properties dp;
-
-		boost::graph_traits<MatrixGraph>::edge_iterator e, e_end;
-		for (boost::tie(e, e_end) = boost::edges(*g); e != e_end; ++e)
-		{
-			boost::put(boost::edge_weight_t(), *g, *e, 1);
-		}
-					
-
-
+		Chrono x("PROCESSING " + std::to_string(p)); // Temps de traitement
+		
+		// On parcourt chaque noeud pour et on retourne le degree.
 		boost::graph_traits<MatrixGraph>::vertex_iterator v, v_end;
 		for (boost::tie(v, v_end) = boost::vertices(*g); v != v_end; ++v)
 		{
 			int degree = boost::out_degree(*v, *g);
 			distribDegree[degree] += 1;
-			boost::put(boost::vertex_color_t(), *g, *v, *v);
 		}
 
-		createJsonDegreeFrequency(distribDegree, p);
-
-		dp.property("weight", get(boost::edge_weight_t(), *g));
-		dp.property("node_id", get(boost::vertex_color_t(), *g));
-
-		//std::ofstream f("outp=" + std::to_string(p) + ".graphml");
-		//boost::write_graphml(f, g, dp, true);
-
-
-		int res = hasCycle(g);
-		std::cout << " number of cluster for p = " << p << " : " << res << std::endl;
-		
-		if(res == 1){
-			std::cout << "1 cluster, graph is connex. We will stop there." <<std::endl;
-			delete g;
-			break;
-		}
-		delete g;
+		createJsonDegreeFrequency(distribDegree, p); // On crée le JSON
+		delete g; // On est dans un vrai langage donc aucun garbage collector
 	}
 }
