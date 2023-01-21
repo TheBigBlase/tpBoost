@@ -15,7 +15,7 @@
 #include "chrono.hpp"
 #include "utils.hpp"
 
-#define NUMBER_NODE 100
+#define NUMBER_NODE 10
 
 
 int main(int argc, char * argv[]){
@@ -35,25 +35,12 @@ int main(int argc, char * argv[]){
 	MatrixGraph* g = new MatrixGraph(n);
 
 	for (auto v{ 0 }; v < n; v++) {
-		for (auto w{ 0 }; w < n; w++) {
-			if (p > unif(gen) && w != v) {
-				boost::add_edge(w, v, *g);
-			}
-		}
-	}
-
-	// On déroule l'algo
-
-	boost::graph_traits<MatrixGraph>::vertex_iterator v, v_end;
-	for (boost::tie(v, v_end) = boost::vertices(*g); v != v_end; ++v)
-	{
 		vertexIter bestVertex = getBestVertexRandom(g);
-		if (bestVertex != v)
+		if (v != *bestVertex) 
 		{
-			boost::clear_vertex(*v, *g);
-			boost::add_edge(*v, *bestVertex, *g);
+			boost::add_edge(*bestVertex, v, *g);
 		}
-
+		
 	}
 
 	// PB : on clear à chaque fois dc pleins de noeuds célib
