@@ -43,8 +43,6 @@ int main(int argc, char * argv[]){
 		
 	}
 
-	// PB : on clear à chaque fois dc pleins de noeuds célib
-
 	boost::print_graph(*g);
 
 
