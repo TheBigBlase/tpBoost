@@ -16,7 +16,7 @@
 #include "chrono.hpp"
 #include "utils.hpp"
 
-#define NUMBER_NODE 5000
+#define NUMBER_NODE 10
 
 
 int main(int argc, char * argv[]){
@@ -36,58 +36,13 @@ int main(int argc, char * argv[]){
 	MatrixGraph* g = new MatrixGraph(n);
 
 	for (auto v{ 0 }; v < n; v++) {
-		for (auto w{ 0 }; w < n; w++) {
-			if (p > unif(gen) && w != v) {
-				boost::add_edge(w, v, *g);
-			}
-		}
-	}
-
-	// On déroule l'algo
-
-
-	boost::graph_traits<MatrixGraph>::vertex_iterator v, v_end;
-	for (boost::tie(v, v_end) = boost::vertices(*g); v != v_end; ++v)
-	{
 		vertexIter bestVertex = getBestVertexRandom(g);
-		if (bestVertex != v)
+		if (v != *bestVertex) 
 		{
-			boost::clear_vertex(*v, *g);
-			boost::add_edge(*v, *bestVertex, *g);
+			boost::add_edge(*bestVertex, v, *g);
 		}
-
+		
 	}
-
-	// PB : on clear à chaque fois dc pleins de noeuds célib
-
-
-	// Peut être que c'est la solution
-
-	/*
-	std::vector<vertexIter> bestVertices;
-
-	boost::graph_traits<MatrixGraph>::vertex_iterator v, v_end;
-	for (boost::tie(v, v_end) = boost::vertices(*g); v != v_end; ++v)
-	{
-		vertexIter bestVertex = getBestVertexRandom(g); // On prend le meilleur noeud
-
-		bestVertices.push_back(bestVertex);
-
-		if (bestVertex != v) // On vérifie que le meilleur noeud n'est pas le même que celui qui est traité.
-		{
-			// On itère le graphe
-			boost::graph_traits<MatrixGraph>::vertex_iterator v2, v2_end;
-			for (boost::tie(v2, v2_end) = boost::vertices(*g); v2 != v2_end; ++v2)
-			{
-				if(find(bestVertices.begin(), bestVertices.end(), v2) == bestVertices.end()) // si le noeud n'a pas déjà été traité on enlève le lien
-				{
-					boost::remove_edge(*v, *v2, *g);
-				}
-			}
-
-			boost::add_edge(*v, *bestVertex, *g);
-		}
-	}*/
 
 	boost::print_graph(*g);
 
