@@ -1,4 +1,4 @@
-SRC = main.cpp
+SRC = main.cpp utils.cpp
 OBJ = ${SRC:.c=.o}
 OUT = build
 RM = rm 

@@ -113,38 +113,31 @@ vertexIter getBestVertexRandom(const MatrixGraph* G)
 	vertexIter v, v_end;
 
 	double maxDegree = 0;
-	std::vector<vertexIter> bestVertexs;
-	bestVertexs.reserve(10000);
+	vertexIter bestVertex;
 
 	for (boost::tie(v, v_end) = boost::vertices(*G); v != v_end; ++v)
 	{
 		//if (v != pickedVertex)
 		//{
 		int degree = boost::out_degree(*v, *G);
-		double randomDegree = (double)(degree)*unifReal(gen);
+		double randomDegree = (double)(degree == 0 ? 1 : degree)*unifReal(gen);
 
-		std::cout << "Real degree : " << degree << " vs Fake degree : " << randomDegree << std::endl;
+		std::cout << "Real degree : " << degree << " | guessed degree: " << randomDegree << std::endl;
 
 		if (randomDegree > maxDegree)
 		{
-			std::cout << "Clear" << std::endl;
+			std::cout << "[NEW BEST]" << std::endl;
 			maxDegree = randomDegree;
-			bestVertexs.clear();
-			bestVertexs.push_back(v);
+			bestVertex = v;
 			//std::cout << "Degree : " << degree << " Max D : " << maxDegree << " New V " << *v << std::endl;
 		}
 		else if (randomDegree == maxDegree)
 		{
-			std::cout << "Ouais" << std::endl;
-			bestVertexs.push_back(v);
+			std::cout << "[SAME DEGREE]" << std::endl;
 		}
 		//}
 
 	}
-	std::cout << "Size : " << bestVertexs.size() << std::endl;
-	std::uniform_int_distribution<> unifInt(0, bestVertexs.size() - 1);
-	vertexIter bestVertex = bestVertexs[unifInt(gen)];
-
 	return bestVertex;
 
 }

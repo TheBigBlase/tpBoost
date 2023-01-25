@@ -16,7 +16,6 @@
 #include "chrono.hpp"
 #include "utils.hpp"
 
-#define NUMBER_NODE 10
 
 
 int main(int argc, char * argv[]){

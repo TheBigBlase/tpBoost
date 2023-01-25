@@ -2,9 +2,10 @@
 #define UTILS_HPP
 #include <boost/graph/adjacency_matrix.hpp>
 #include <boost/graph/adjacency_list.hpp>
-
 #include <random>
 #include <array>
+
+#define NUMBER_NODE 100
 
 typedef boost::adjacency_matrix<
 					boost::undirectedS,
