@@ -5,15 +5,16 @@
 
 #include <random>
 #include <array>
+#define NUMBER_NODE 10
 
-typedef boost::adjacency_matrix<
-					boost::undirectedS,
+typedef boost::adjacency_matrix
+				<		boost::undirectedS,
 						boost::property< boost::vertex_color_t, int >,
 						boost::property< boost::edge_weight_t, int >
 				> MatrixGraph;
 
-typedef boost::adjacency_list<
-					boost::vecS,
+typedef boost::adjacency_list
+			<		boost::vecS,
 					boost::vecS,
 					boost::undirectedS,
 						boost::property< boost::vertex_color_t, int >
@@ -34,13 +35,20 @@ typedef struct {
 
 void createJsonDegreeFrequency(const std::map<int, int>& distrib, const double p);
 int hasCycle(MatrixGraph * g);
-int firstNonWhiteVertex(boost::vector_property_map<boost::default_color_type, boost::typed_identity_property_map<size_t>> *colormap,MatrixGraph * g);
+int firstNonWhiteVertex(boost::vector_property_map<boost::default_color_type, 
+		boost::typed_identity_property_map<size_t>> *colormap,MatrixGraph * g);
 
 vertexIter getBestVertex(const MatrixGraph* G);
 vertexIter getBestVertexRandom(const MatrixGraph* G);
-vertexDescrMatr getBestVertex(const MatrixGraph* G, BestVertexList * bestVertex, vertexDescrMatr v);
+vertexIter getBestVertexRandomIgnreOne(const MatrixGraph* G, vertexIter);
+vertexDescrMatr getBestVertex(const MatrixGraph* G,
+		BestVertexList * bestVertex, vertexDescrMatr v);
+
+void defect(MatrixGraph* G, std::map<vertexIter, std::pair<int, int>> *);
 
 void bestVertexArrayAppend(std::array<BestVertexList *, 10>, BestVertexList v);
 void bestVertexArrayPrint(std::array<BestVertexList *, 10>);
+
+void initKarmaMap(std::map<vertexIter, std::pair<int, int>>*, const MatrixGraph *);
 
 #endif

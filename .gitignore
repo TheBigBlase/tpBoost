@@ -6,3 +6,4 @@
 dependencies/
 x64/
 .vs/
+build/

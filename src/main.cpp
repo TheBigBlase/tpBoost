@@ -16,7 +16,6 @@
 #include "chrono.hpp"
 #include "utils.hpp"
 
-#define NUMBER_NODE 10
 
 
 int main(int argc, char * argv[]){
@@ -27,24 +26,43 @@ int main(int argc, char * argv[]){
 	std::mt19937 gen(rd());
 	std::uniform_real_distribution<> unif(0, 1);//uniform distribution between 0 and 1
 
-	int const n = NUMBER_NODE;
+	//first iteration of the game 
 
-	// On crée le graphe
-	double p = 1;
-	Chrono c("Total " + std::to_string(p));
+	MatrixGraph* g = new MatrixGraph(NUMBER_NODE);
 
-	MatrixGraph* g = new MatrixGraph(n);
-
-	for (auto v{ 0 }; v < n; v++) {
+	for (auto v{ 0 } ; v < NUMBER_NODE ; v++) {
 		vertexIter bestVertex = getBestVertexRandom(g);
 		if (v != *bestVertex) 
 		{
 			boost::add_edge(*bestVertex, v, *g);
 		}
-		
 	}
 
 	boost::print_graph(*g);
-
 	std::cout << "Cycles : " << hasCycle(g) << std::endl;
+
+	std::cout 
+		<< "---------------------------"
+		<< "SECOND PHASE" 
+		<< "---------------------------"
+		<< std::endl;
+
+	//second iteration : remove if better (and add karma)
+	//create karma map (python dictionnary)
+	//key: vertexIter, value : 
+	//{(int) number of infedity, (int) number of total cases}
+	std::map<vertexIter, std::pair<int, int>> * karmaMap = new std::map<vertexIter, std::pair<int, int>> ;
+	initKarmaMap(karmaMap, g);
+	
+	for(auto k {0} ; k < 4 ; k++){
+
+		std::cout 
+			<< "---------------------------"
+			<< " k = " << k
+			<< "---------------------------"
+			<< std::endl;
+		defect(g, karmaMap);
+		boost::print_graph(*g);
+		std::cout << "Cycles : " << hasCycle(g) << std::endl;
+	}
 }
