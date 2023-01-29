@@ -12,17 +12,11 @@
 #include <random>
 #include <tuple>
 
-#define NUMBER_NODE 1000
+#define NUMBER_NODE 10000
 
-typedef boost::adjacency_matrix<
-					boost::undirectedS,
-						boost::property< boost::vertex_color_t, int >,
-						boost::property< boost::edge_weight_t, int >
-				> MatrixGraph;
+typedef boost::adjacency_matrix<boost::undirectedS, boost::property< boost::vertex_color_t, int >, boost::property< boost::edge_weight_t, int >> MatrixGraph;
 
-typedef std::pair<boost::graph_traits<MatrixGraph>::vertex_descriptor, 
-									boost::graph_traits<MatrixGraph>::vertex_descriptor>
-				PairVertexIterator;
+typedef std::pair<boost::graph_traits<MatrixGraph>::vertex_descriptor, boost::graph_traits<MatrixGraph>::vertex_descriptor> PairVertexIterator;
 
 typedef boost::property_map<MatrixGraph, boost::vertex_color_t> color_map_t;
 
@@ -90,15 +84,11 @@ void createJsonDegreeFrequency(const std::map<int, int>& distrib, const double p
 	{
 		std::string* json = new std::string;
 
-		//FrenquencyDegree << "[";
 		*json = "[";
 
 
 		for (const auto& it : distrib)
 		{
-			//std::cout << it.first << "-" << it.second << std::endl;
-
-			//FrenquencyDegree << "{\"degree\":" << std::to_string(it.first) << ",\"freq\":" << std::to_string(it.second) << "},\n";
 			*json += ("{\"degree\":" + std::to_string(it.first) + ",\"freq\":" + std::to_string(it.second) + "},\n");
 		}
 
@@ -121,20 +111,24 @@ void createJsonDegreeFrequency(const std::map<int, int>& distrib, const double p
 
 int main(int argc, char * argv[]){
 
-	Chrono C("TOTAL SCRIPT");
+	//Chrono C("TOTAL SCRIPT"); // benchmark
 
 	std::random_device rd;
 	std::mt19937 gen(rd());
-	std::uniform_real_distribution<> unif(0, 1);//uniform distribution between 0 and 1
+	std::uniform_real_distribution<> unif(0, 1); //uniform distribution between 0 and 1
 
 	int const n = NUMBER_NODE;
 
-	//std::array<std::array<int, n>, n> edgeMatrix {0};
+	// On génère le graphe
+	for(double p = 0.01; p < 1 ; p+=0.02){
 
-	for(double p = 0.0; p < 1 ; p+=0.001){
-		Chrono c("Total " + std::to_string(p));
-		std::map<int, int> distribDegree;
-		MatrixGraph * g = new MatrixGraph(n);
+		//Chrono c("Total " + std::to_string(p)); // benchmark
+
+		std::map<int, int> distribDegree; // tableau pour la distribution des degrées
+
+		MatrixGraph * g = new MatrixGraph(n); // Graphe
+
+		// On génère le graphe
 
 		for(auto v {0} ; v < n ; v++){
 			for(auto w {0} ; w < n ; w++){
@@ -144,18 +138,21 @@ int main(int argc, char * argv[]){
 			}
 		}
 
-		Chrono x("BABIDJI " + std::to_string(p));
+		//Chrono x("TRAITEMENT " + std::to_string(p)); // Benchmarking
 
 		boost::dynamic_properties dp;
 
+		// Pour la génération du fichier .ml
 		boost::graph_traits<MatrixGraph>::edge_iterator e, e_end;
 		for (boost::tie(e, e_end) = boost::edges(*g); e != e_end; ++e)
 		{
 			boost::put(boost::edge_weight_t(), *g, *e, 1);
 		}
-					
 
+		dp.property("weight", get(boost::edge_weight_t(), *g));
+		dp.property("node_id", get(boost::vertex_color_t(), *g));
 
+		// Enregistrement des degrés
 		boost::graph_traits<MatrixGraph>::vertex_iterator v, v_end;
 		for (boost::tie(v, v_end) = boost::vertices(*g); v != v_end; ++v)
 		{
@@ -164,23 +161,29 @@ int main(int argc, char * argv[]){
 			boost::put(boost::vertex_color_t(), *g, *v, *v);
 		}
 
+		// On crée le fichier .json de la distribution des degrés pour une probabilité p donnée
 		createJsonDegreeFrequency(distribDegree, p);
 
-		dp.property("weight", get(boost::edge_weight_t(), *g));
-		dp.property("node_id", get(boost::vertex_color_t(), *g));
 
+
+		// On crée le .ml
+		// 
 		//std::ofstream f("outp=" + std::to_string(p) + ".graphml");
 		//boost::write_graphml(f, g, dp, true);
 
+		// Première partie de l'exercice 1
 
 		int res = hasCycle(g);
-		std::cout << " number of cluster for p = " << p << " : " << res << std::endl;
-		
+
 		if(res == 1){
 			std::cout << "1 cluster, graph is connex. We will stop there." <<std::endl;
 			delete g;
-			break;
 		}
-		delete g;
+		else
+		{
+			std::cout << "Number of cluster for p = " << p << " : " << res << std::endl;
+			delete g;
+		}
+
 	}
 }
