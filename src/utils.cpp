@@ -7,6 +7,20 @@
 #include <fstream>
 #include <string>
 
+
+//gdb sucks with c++ data structure, for instance map.
+//this is for debugging purposes : 
+//
+
+void testPrint(std::map<vertexIter, std::pair<int, int>>& m) {
+	for(auto k : m){
+		std::cout << "key: " << *k.first
+			<< ", value : " << k.second.first 
+			<< ", " << k.second.second 
+			<< std::endl;
+	}
+}
+
 void createJsonDegreeFrequency(const std::map<int, int>& distrib, const double p)
 {
 	std::string nameFile = "./FrequencyDegree/" + std::to_string(p) + ".json";
@@ -159,7 +173,7 @@ vertexIter selectBestVertexDefect(const MatrixGraph* G, std::map<vertexIter,
 
 		double karma = (double)(*karmaMap)[v].first / (*karmaMap)[v].second;
 		std::cout << " | karma : " << karma;
-		if(karma < 0.75){//connect only to min karma
+		if(karma < 0.5){//connect only to min karma
 			std::cout << " | Karma too low" << std::endl;
 			continue;
 		}
@@ -196,30 +210,20 @@ void defect(MatrixGraph * G, std::map<vertexIter,
 			boost::clear_vertex(boost::vertex(v, *G), *G);
 			boost::add_edge(*selectedV, v, *G);
 
-			std::pair<int, int> pair = 
-				std::pair<int, int>{(*karmaMap)[selectedV].first + degree,
-					(*karmaMap)[selectedV].second + 1};
-
-			(*karmaMap)[selectedV] = {(*karmaMap)[selectedV].first + degree,
-				(*karmaMap)[selectedV].second + 1};//workds
+			(*karmaMap)[selectedV] = {(*karmaMap)[selectedV].first,
+				(*karmaMap)[selectedV].second + 1};//best vertex has cheated for 1 con
 
 			vertexIter currentV = (vertexIter)boost::vertex(v, *G);
-			//karmaMap[currentV] = {karmaMap[currentV].first + degree,
-			//	karmaMap[currentV].second + 1};//doesnt work FIXME
-
-			(*karmaMap)[currentV].first = (*karmaMap)[currentV].first + degree;
-			(*karmaMap)[currentV].second ++;//doesnt work
+			(*karmaMap)[currentV] = {(*karmaMap)[currentV].first + 1,
+				(*karmaMap)[currentV].second + degree};//worst has cheated for its degree
 
 			//clueless
 			std::cout << "[CLEAR VERTEX]"
-					<< (*karmaMap)[currentV].first
-					<< " ; "
-					<< (*karmaMap)[selectedV].first
 					<< std::endl;
 		}
 		else {//not cheating
-			(*karmaMap)[selectedV] = {(*karmaMap)[selectedV].first,
-				(*karmaMap)[selectedV].second + 1};
+			(*karmaMap)[selectedV] = {(*karmaMap)[selectedV].first + 1,
+				(*karmaMap)[selectedV].second + 1};//reinforce its karma
 			std::cout << "[NOTHING DONE]" << std::endl;
 		}
 	}
